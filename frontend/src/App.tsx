@@ -1,0 +1,218 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { CreativeInput, DeviceType, LayoutConfig } from './types/layout';
+import { CAMPAIGN_PRESETS } from './constants/presets';
+import { generateClientFallbackLayout } from './services/clientFallback';
+import { requestLayoutGeneration } from './services/api';
+import { exportCreativeImage } from './utils/exporter';
+import { Header } from './components/Header';
+import { InputPanel } from './components/InputPanel';
+import { PreviewCanvas } from './components/PreviewCanvas';
+import { InspectorPanel } from './components/InspectorPanel';
+import { AlertCircle, CheckCircle, Info } from 'lucide-react';
+
+export function App() {
+  const defaultPreset = CAMPAIGN_PRESETS[0];
+
+  const [input, setInput] = useState<CreativeInput>(defaultPreset.input);
+  const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() =>
+    generateClientFallbackLayout(defaultPreset.input)
+  );
+  const [currentDevice, setCurrentDevice] = useState<DeviceType>('desktop');
+  const [zoomLevel, setZoomLevel] = useState<number>(0.85);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [engineMode, setEngineMode] = useState<'ai-gemini' | 'deterministic-fallback'>('deterministic-fallback');
+  const [toast, setToast] = useState<{
+    type: 'info' | 'success' | 'warning' | 'error';
+    message: string;
+  } | null>(null);
+
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const showToast = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
+
+  // Adjust default zoom based on screen width
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1400) {
+        setZoomLevel(0.75);
+      } else {
+        setZoomLevel(0.85);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleSelectPreset = async (presetId: string) => {
+    const found = CAMPAIGN_PRESETS.find((p) => p.id === presetId);
+    if (found) {
+      setInput(found.input);
+      setIsGenerating(true);
+      try {
+        const result = await requestLayoutGeneration(found.input);
+        setLayoutConfig(result.layout);
+        setEngineMode(result.source === 'ai-gemini' ? 'ai-gemini' : 'deterministic-fallback');
+        if (result.warning) {
+          showToast(result.warning, 'info');
+        } else {
+          showToast(`Loaded "${found.name}" & generated creative layout`, 'success');
+        }
+      } catch {
+        const fallback = generateClientFallbackLayout(found.input);
+        setLayoutConfig(fallback);
+        setEngineMode('deterministic-fallback');
+      } finally {
+        setIsGenerating(false);
+      }
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    if (!input.headline.trim() || !input.cta.trim()) {
+      showToast('Please provide at least a Headline and Call-to-Action.', 'warning');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await requestLayoutGeneration(input);
+      setLayoutConfig(result.layout);
+      const isAI = result.source === 'ai-gemini';
+      setEngineMode(isAI ? 'ai-gemini' : 'deterministic-fallback');
+
+      if (isAI) {
+        showToast('Generated AI-optimized creative configuration via Gemini!', 'success');
+      } else if (result.warning) {
+        showToast(result.warning, 'info');
+      } else {
+        showToast('Layout synthesized via Deterministic Fallback Engine', 'info');
+      }
+    } catch (err: any) {
+      console.error(err);
+      const fallback = generateClientFallbackLayout(input);
+      setLayoutConfig(fallback);
+      setEngineMode('deterministic-fallback');
+      showToast('API unreachable. Fallback engine generated layout.', 'warning');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleRunFallback = () => {
+    const fallback = generateClientFallbackLayout(input);
+    setLayoutConfig(fallback);
+    setEngineMode('deterministic-fallback');
+    showToast('Applied Deterministic Fallback Layout Rules', 'info');
+  };
+
+  const handleExport = async (format: 'png' | 'jpeg') => {
+    if (!canvasRef.current) return;
+    setIsExporting(true);
+    try {
+      await exportCreativeImage(canvasRef.current, input.productName, currentDevice, format);
+      showToast(`Exported creative as high-res ${format.toUpperCase()}`, 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Failed to export image. Please try again.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleInputChange = (updated: Partial<CreativeInput>) => {
+    setInput((prev) => {
+      const next = { ...prev, ...updated };
+      // Keep layout theme colors in sync if brand colors updated
+      if (updated.brandColors && updated.brandColors.length > 0) {
+        setLayoutConfig((c) => ({
+          ...c,
+          theme: {
+            ...c.theme,
+            primaryColor: updated.brandColors![0] || c.theme.primaryColor,
+            secondaryColor: updated.brandColors![1] || c.theme.secondaryColor,
+            accentColor: updated.brandColors![2] || c.theme.accentColor
+          }
+        }));
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased overflow-hidden">
+      {/* Toast Notification Banner */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div
+            className={`px-4 py-3 rounded-xl shadow-2xl border flex items-center gap-2.5 text-xs font-medium ${
+              toast.type === 'success'
+                ? 'bg-emerald-950 border-emerald-500/50 text-emerald-200'
+                : toast.type === 'warning'
+                ? 'bg-amber-950 border-amber-500/50 text-amber-200'
+                : toast.type === 'error'
+                ? 'bg-rose-950 border-rose-500/50 text-rose-200'
+                : 'bg-slate-900 border-slate-700 text-slate-200'
+            }`}
+          >
+            {toast.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400" />}
+            {toast.type === 'warning' && <AlertCircle className="w-4 h-4 text-amber-400" />}
+            {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-400" />}
+            {toast.type === 'info' && <Info className="w-4 h-4 text-cyan-400" />}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Top Bar Navigation */}
+      <Header
+        currentDevice={currentDevice}
+        onDeviceChange={setCurrentDevice}
+        zoomLevel={zoomLevel}
+        onZoomChange={setZoomLevel}
+        onSelectPreset={handleSelectPreset}
+        onExport={handleExport}
+        isExporting={isExporting}
+        isGenerating={isGenerating}
+        onGenerateAI={handleGenerateAI}
+        engineMode={engineMode}
+      />
+
+      {/* Main Studio 3-Panel Workspace */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Studio Input Panel */}
+        <InputPanel
+          input={input}
+          onChange={handleInputChange}
+          onGenerateAI={handleGenerateAI}
+          onRunFallback={handleRunFallback}
+          isGenerating={isGenerating}
+        />
+
+        {/* Center Live Responsive Canvas Viewport */}
+        <PreviewCanvas
+          input={input}
+          layoutConfig={layoutConfig}
+          currentDevice={currentDevice}
+          zoomLevel={zoomLevel}
+          canvasRef={canvasRef}
+        />
+
+        {/* Right AI Intelligence & Live Tweaker Inspector */}
+        <InspectorPanel
+          layoutConfig={layoutConfig}
+          onUpdateConfig={setLayoutConfig}
+          engineMode={engineMode}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,113 @@
+export type LayoutType =
+  | 'image-left-content-right'
+  | 'image-right-content-left'
+  | 'centered-product'
+  | 'full-background-image'
+  | 'split-screen'
+  | 'minimal-editorial'
+  | 'product-focused'
+  | 'text-focused';
+
+export type DeviceType = 'mobile' | 'tablet' | 'desktop';
+
+export interface DeviceSpec {
+  id: DeviceType;
+  label: string;
+  width: number;
+  height: number;
+  aspectRatio: string;
+  icon: string;
+}
+
+export interface CreativeInput {
+  productName: string;
+  headline: string;
+  description: string;
+  cta: string;
+  brandName?: string;
+  brandColors: string[];
+  targetAudience?: string;
+  campaignGoal?: string;
+  badgeText?: string;
+  imageUrl?: string;
+}
+
+export interface LayoutTheme {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  cardBackground: string;
+  fontFamily: 'sans' | 'serif' | 'mono' | 'display';
+}
+
+export interface LayoutTypography {
+  headlineScale: 'compact' | 'standard' | 'large' | 'heroic';
+  bodyScale: 'small' | 'medium' | 'large';
+  letterSpacing: 'tight' | 'normal' | 'wide';
+  headlineFontWeight: 'semibold' | 'bold' | 'extrabold' | 'black';
+  textTransform: 'uppercase' | 'none' | 'capitalize';
+}
+
+export interface LayoutComposition {
+  alignment: 'left' | 'center' | 'right';
+  imagePosition: 'left' | 'right' | 'top' | 'center' | 'background';
+  imageFit: 'cover' | 'contain' | 'fill';
+  imageAspectRatio: 'square' | 'portrait' | 'landscape' | 'wide';
+  ctaPosition: 'inline' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'floating';
+  ctaStyle: 'solid' | 'outline' | 'gradient' | 'pill';
+  visualEmphasis: 'headline' | 'product-image' | 'discount-badge' | 'cta';
+  spacing: 'compact' | 'comfortable' | 'spacious';
+  overlayOpacity: number;
+  hasBadge: boolean;
+  badgePosition: 'top-left' | 'top-right' | 'above-headline' | 'on-image';
+}
+
+export interface LayoutResponsiveRules {
+  mobile: {
+    direction: 'column' | 'column-reverse' | 'overlay';
+    imageHeight: string;
+    ctaFullWidth: boolean;
+    textAlign: 'left' | 'center' | 'right';
+  };
+  tablet: {
+    direction: 'column' | 'row';
+    splitRatio: string;
+  };
+  desktop: {
+    direction: 'row';
+    splitRatio: string;
+  };
+}
+
+export interface CreativeRationale {
+  visualHierarchy: string;
+  colorHarmony: string;
+  responsiveStrategy: string;
+  audienceFit: string;
+  designTips: string[];
+}
+
+export interface LayoutConfig {
+  layoutType: LayoutType;
+  theme: LayoutTheme;
+  typography: LayoutTypography;
+  composition: LayoutComposition;
+  responsiveRules: LayoutResponsiveRules;
+  creativeRationale: CreativeRationale;
+  metadata: {
+    engineMode: 'ai-gemini' | 'deterministic-fallback';
+    generatedAt: string;
+    confidenceScore?: number;
+  };
+}
+
+export interface GenerateLayoutRequest extends CreativeInput {}
+
+export interface GenerateLayoutResponse {
+  success: boolean;
+  layout: LayoutConfig;
+  input: CreativeInput;
+  warnings?: string[];
+}
