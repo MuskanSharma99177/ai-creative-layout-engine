@@ -21,7 +21,7 @@ export const CreativeHeadline: React.FC<CreativeHeadlineProps> = ({
       case 'heroic':
         if (device === 'mobile') return 'text-2xl sm:text-3xl leading-tight';
         if (device === 'tablet') return 'text-3xl lg:text-4xl leading-tight';
-        return 'text-4xl lg:text-5xl leading-none';
+        return 'text-4xl lg:text-5xl leading-tight';
       case 'large':
         if (device === 'mobile') return 'text-xl sm:text-2xl leading-tight';
         if (device === 'tablet') return 'text-2xl lg:text-3xl leading-snug';
@@ -92,7 +92,7 @@ export const CreativeHeadline: React.FC<CreativeHeadlineProps> = ({
 
   return (
     <h1
-      className={`${getFontSize()} ${getFontWeight()} ${getLetterSpacing()} ${getTextTransform()} ${getFontFamily()} transition-all duration-200 ${className}`}
+      className={`${getFontSize()} ${getFontWeight()} ${getLetterSpacing()} ${getTextTransform()} ${getFontFamily()} break-words max-w-full overflow-visible transition-all duration-200 ${className}`}
       style={{ color: theme.textColor }}
     >
       {headline}

@@ -9,10 +9,16 @@
     "start": "node dist/index.js",
     "test": "vitest run"
   },
-  "keywords": ["ai", "layout-engine", "creative", "ad-tech"],
+  "keywords": [
+    "ai",
+    "layout-engine",
+    "creative",
+    "ad-tech"
+  ],
   "author": "Flam SWE Intern",
   "license": "MIT",
   "dependencies": {
+    "@google/genai": "^2.22.0",
     "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

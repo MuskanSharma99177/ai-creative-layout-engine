@@ -1,26 +1,23 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
 import { CreativeInputDto, LayoutConfigDto, LayoutConfigSchema } from '../schemas/layout.schema.js';
 import { generateFallbackLayout } from './fallbackEngine.js';
 
+dotenv.config();
+
 export async function generateCreativeLayout(input: CreativeInputDto): Promise<LayoutConfigDto> {
+  // Ensure fresh environment variables are read
+  dotenv.config();
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
   // If no API key is provided, use deterministic fallback
   if (!apiKey) {
-    console.log('[AI Engine] GEMINI_API_KEY not configured. Invoking Deterministic Fallback Engine.');
+    console.log('[AI Engine] GEMINI_API_KEY is not set in backend/.env. Using Deterministic Fallback Engine.');
     return generateFallbackLayout(input);
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-1.5-flash for speed, reliability, and structured JSON output support
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.4
-      }
-    });
+    const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `
 You are an expert Creative Art Director, UI/UX Architect, and Design Technologist at Flam (an AI-native visual content company).
@@ -38,8 +35,8 @@ INPUT:
 - Badge Text: "${input.badgeText || ''}"
 - Has Product Image: ${Boolean(input.imageUrl)}
 
-GUIDELINES:
-1. Select the most fitting layoutType among:
+CRITICAL CONSTRAINTS:
+1. layoutType MUST be chosen from ONLY these 8 existing layout templates:
    - "image-left-content-right"
    - "image-right-content-left"
    - "centered-product"
@@ -48,15 +45,23 @@ GUIDELINES:
    - "minimal-editorial"
    - "product-focused"
    - "text-focused"
-2. Visual Hierarchy: Decide which element receives maximum visual weight (headline, product-image, discount-badge, or cta).
+2. Visual Hierarchy: Decide which element receives maximum visual weight ("headline", "product-image", "discount-badge", or "cta").
 3. Color Harmony: Derive primaryColor, secondaryColor, accentColor, backgroundColor, textColor, cardBackground ensuring high contrast (WCAG AA compliant).
-4. Responsive Strategy: Define distinct structural shifts for mobile (e.g. column stacking, thumb-friendly CTA, image height), tablet (balanced proportions), and desktop (panoramic split or hero grid).
-5. Creative Rationale: Provide professional justification explaining why this layout, color scheme, and typography scale were selected for this specific product and audience.
+4. Responsive Strategy: Define distinct structural shifts for mobile (column stacking, thumb-friendly CTA, image height), tablet (balanced proportions), and desktop (panoramic split or hero grid).
+5. Creative Rationale: Provide professional justification explaining:
+   - layoutChoice: why this specific template is best suited for this product and objective
+   - visualHierarchy: why the chosen element receives maximum focal weight
+   - imagePlacement: rationale for image positioning
+   - ctaPlacement: rationale for CTA placement and style
+   - responsiveStrategy: structural shift explanation across Mobile, Tablet, and Desktop
+   - colorHarmony: color theory and contrast justification
+   - audienceFit: alignment with target audience psychology
+   - designTips: 3 actionable art director tips
 
 OUTPUT FORMAT:
-Return a strictly formatted JSON object adhering to this shape:
+Return ONLY a valid JSON object matching this schema (do NOT include markdown code fences, just raw valid JSON):
 {
-  "layoutType": "...",
+  "layoutType": "one of the 8 allowed types",
   "theme": {
     "primaryColor": "#hex",
     "secondaryColor": "#hex",
@@ -103,7 +108,10 @@ Return a strictly formatted JSON object adhering to this shape:
     }
   },
   "creativeRationale": {
+    "layoutChoice": "...",
     "visualHierarchy": "...",
+    "imagePlacement": "...",
+    "ctaPlacement": "...",
     "colorHarmony": "...",
     "responsiveStrategy": "...",
     "audienceFit": "...",
@@ -117,9 +125,22 @@ Return a strictly formatted JSON object adhering to this shape:
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const rawJson = JSON.parse(text);
+    console.log('[AI Engine] Contacting Gemini API with @google/genai SDK...');
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        temperature: 0.3
+      }
+    });
+
+    let rawText = response.text || '';
+    if (rawText.includes('```')) {
+      rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    }
+
+    const rawJson = JSON.parse(rawText);
 
     // Validate with Zod schema
     const validated = LayoutConfigSchema.safeParse({
@@ -127,21 +148,25 @@ Return a strictly formatted JSON object adhering to this shape:
       metadata: {
         engineMode: 'ai-gemini',
         generatedAt: new Date().toISOString(),
-        confidenceScore: rawJson.metadata?.confidenceScore || 0.95
+        confidenceScore: rawJson.metadata?.confidenceScore || 0.96
       }
     });
 
     if (!validated.success) {
       console.warn(
-        '[AI Engine] AI JSON output failed schema validation. Falling back to deterministic engine. Errors:',
+        '[AI Engine] Gemini response failed Zod schema validation. Automatically falling back to Deterministic Fallback Engine. Issues:',
         validated.error.issues
       );
       return generateFallbackLayout(input);
     }
 
+    console.log('[AI Engine] Gemini generation and Zod validation succeeded! Layout archetype:', validated.data.layoutType);
     return validated.data;
-  } catch (error) {
-    console.error('[AI Engine] Error invoking Gemini API, defaulting to Fallback Engine:', error);
+  } catch (error: any) {
+    console.error(
+      '[AI Engine] Error calling Gemini API. Automatically falling back to Deterministic Fallback Engine:',
+      error.message || error
+    );
     return generateFallbackLayout(input);
   }
 }

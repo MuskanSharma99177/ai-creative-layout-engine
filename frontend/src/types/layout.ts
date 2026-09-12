@@ -83,7 +83,10 @@ export interface LayoutResponsiveRules {
 }
 
 export interface CreativeRationale {
+  layoutChoice?: string;
   visualHierarchy: string;
+  imagePlacement?: string;
+  ctaPlacement?: string;
   colorHarmony: string;
   responsiveStrategy: string;
   audienceFit: string;

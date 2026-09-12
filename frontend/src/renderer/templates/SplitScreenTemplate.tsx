@@ -25,8 +25,8 @@ export const SplitScreenTemplate: React.FC<TemplateProps> = ({ input, config, de
       {/* Brand Color Block with Copy */}
       <div
         className={`w-full ${
-          isMobile ? 'h-3/5 p-6' : 'w-1/2 p-12'
-        } flex flex-col justify-between relative`}
+          isMobile ? 'h-3/5 p-6' : 'w-1/2 p-8 lg:p-10'
+        } min-w-0 box-border flex flex-col justify-between relative`}
         style={{ backgroundColor: theme.primaryColor }}
       >
         <div className="space-y-4">

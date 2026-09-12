@@ -18,7 +18,7 @@ export const ImageLeftRightTemplate: React.FC<TemplateProps> = ({ input, config,
   const isTablet = device === 'tablet';
 
   const { theme, composition } = config;
-  const paddingClass = isMobile ? 'p-5' : isTablet ? 'p-8' : 'p-12';
+  const paddingClass = isMobile ? 'p-5' : isTablet ? 'p-8' : 'p-8 lg:p-10';
   const gapClass = isMobile ? 'gap-4' : isTablet ? 'gap-6' : 'gap-10';
 
   // Structural shifts per device
@@ -56,7 +56,7 @@ export const ImageLeftRightTemplate: React.FC<TemplateProps> = ({ input, config,
       <div
         className={`w-full ${
           isMobile ? 'flex-1 justify-between' : 'w-1/2'
-        } flex flex-col justify-center ${
+        } min-w-0 box-border flex flex-col justify-center ${
           composition.alignment === 'center' ? 'items-center text-center' : 'items-start text-left'
         }`}
       >

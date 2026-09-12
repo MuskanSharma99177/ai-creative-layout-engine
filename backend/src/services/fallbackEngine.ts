@@ -1,4 +1,4 @@
-import { CreativeInputDto, LayoutConfigDto } from '../schemas/layout.schema.js';
+import { CreativeInputRawDto, CreativeInputSchema, LayoutConfigDto } from '../schemas/layout.schema.js';
 
 // Helper to calculate relative luminance for WCAG contrast
 function getLuminance(hex: string): number {
@@ -35,7 +35,8 @@ function ensureAccessibleTextColor(bgHex: string, preferredTextHex: string): str
   }
 }
 
-export function generateFallbackLayout(input: CreativeInputDto): LayoutConfigDto {
+export function generateFallbackLayout(rawInput: CreativeInputRawDto): LayoutConfigDto {
+  const input = CreativeInputSchema.parse(rawInput);
   const primaryColor = input.brandColors[0] || '#0F172A';
   const secondaryColor = input.brandColors[1] || '#3B82F6';
   const accentColor = input.brandColors[2] || '#F59E0B';
@@ -136,10 +137,28 @@ export function generateFallbackLayout(input: CreativeInputDto): LayoutConfigDto
     cardBackground = 'rgba(255, 255, 255, 0.9)';
   }
 
+  const ctaPosition: LayoutConfigDto['composition']['ctaPosition'] =
+    layoutType === 'centered-product'
+      ? 'bottom-center'
+      : layoutType === 'product-focused'
+      ? 'bottom-left'
+      : 'inline';
+
   const rationale: LayoutConfigDto['creativeRationale'] = {
+    layoutChoice: `Selected "${layoutType}" template because ${
+      isSaleOrDiscount
+        ? 'the high-urgency promotional headline benefits from high-contrast split visual tension'
+        : isLuxury
+        ? 'luxury branding requires generous negative space and sophisticated editorial framing'
+        : hasImage
+        ? 'high-impact product photography commands prominent focal space'
+        : 'focused headline copy and balanced center alignment delivers clean readability'
+    }.`,
     visualHierarchy: `Prioritizing ${visualEmphasis.replace('-', ' ')} based on ${
       isSaleOrDiscount ? 'high-urgency offer signals' : 'content length and product imagery'
     }. Headline scaled to ${headlineScale} for instant scanability.`,
+    imagePlacement: `Image positioned at ${imagePosition} to guide user eye-flow directly towards the headline and call to action.`,
+    ctaPlacement: `CTA placed in ${ctaPosition} with ${ctaStyle} style for frictionless conversion and thumb accessibility.`,
     colorHarmony: `Base background (${backgroundColor}) calibrated with primary brand color (${primaryColor}) and accent (${accentColor}) to assure WCAG AA compliant contrast.`,
     responsiveStrategy:
       'Desktop balances media and copy side-by-side; Tablet condenses padding; Mobile stacks imagery above copy with a full-width thumb-zone CTA.',

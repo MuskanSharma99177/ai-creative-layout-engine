@@ -130,7 +130,15 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden xl:flex items-center bg-slate-800/80 rounded-lg border border-slate-700 p-0.5 text-slate-300">
           <button
             type="button"
-            onClick={() => onZoomChange(Math.max(0.5, zoomLevel - 0.1))}
+            onClick={() => onZoomChange(0.68)}
+            className="px-1.5 py-0.5 hover:bg-slate-700 rounded text-[10px] font-semibold text-slate-400 hover:text-white"
+            title="Fit to screen"
+          >
+            Fit
+          </button>
+          <button
+            type="button"
+            onClick={() => onZoomChange(Math.max(0.4, Number((zoomLevel - 0.1).toFixed(2))))}
             className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
             title="Zoom Out"
           >
@@ -141,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <button
             type="button"
-            onClick={() => onZoomChange(Math.min(1.5, zoomLevel + 0.1))}
+            onClick={() => onZoomChange(Math.min(1.5, Number((zoomLevel + 0.1).toFixed(2))))}
             className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
             title="Zoom In"
           >

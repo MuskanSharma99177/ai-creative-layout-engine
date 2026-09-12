@@ -78,7 +78,10 @@ export const LayoutResponsiveRulesSchema = z.object({
 });
 
 export const CreativeRationaleSchema = z.object({
+  layoutChoice: z.string().optional().default('Selected for optimal visual impact and message harmony.'),
   visualHierarchy: z.string(),
+  imagePlacement: z.string().optional().default('Positioned for maximum focal balance.'),
+  ctaPlacement: z.string().optional().default('Placed in the primary eye-path for peak conversions.'),
   colorHarmony: z.string(),
   responsiveStrategy: z.string(),
   audienceFit: z.string(),
@@ -100,4 +103,5 @@ export const LayoutConfigSchema = z.object({
 });
 
 export type CreativeInputDto = z.infer<typeof CreativeInputSchema>;
+export type CreativeInputRawDto = z.input<typeof CreativeInputSchema>;
 export type LayoutConfigDto = z.infer<typeof LayoutConfigSchema>;

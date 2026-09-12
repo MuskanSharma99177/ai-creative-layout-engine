@@ -126,6 +126,13 @@ export function generateClientFallbackLayout(input: CreativeInput): LayoutConfig
     cardBackground = 'rgba(255, 255, 255, 0.9)';
   }
 
+  const ctaPosition: LayoutConfig['composition']['ctaPosition'] =
+    layoutType === 'centered-product'
+      ? 'bottom-center'
+      : layoutType === 'product-focused'
+      ? 'bottom-left'
+      : 'inline';
+
   return {
     layoutType,
     theme: {
@@ -179,9 +186,20 @@ export function generateClientFallbackLayout(input: CreativeInput): LayoutConfig
       }
     },
     creativeRationale: {
+      layoutChoice: `Selected "${layoutType}" template because ${
+        isSaleOrDiscount
+          ? 'the high-urgency promotional headline benefits from high-contrast split visual tension'
+          : isLuxury
+          ? 'luxury branding requires generous negative space and sophisticated editorial framing'
+          : hasImage
+          ? 'high-impact product photography commands prominent focal space'
+          : 'focused headline copy and balanced center alignment delivers clean readability'
+      }.`,
       visualHierarchy: `Prioritizing ${visualEmphasis.replace('-', ' ')} based on ${
         isSaleOrDiscount ? 'high-urgency offer signals' : 'content volume and product imagery'
       }. Headline scale tuned to ${headlineScale}.`,
+      imagePlacement: `Image positioned at ${imagePosition} to guide user eye-flow directly towards the headline and call to action.`,
+      ctaPlacement: `CTA placed in ${ctaPosition} with ${ctaStyle} style for frictionless conversion and thumb accessibility.`,
       colorHarmony: `Base background (${backgroundColor}) calibrated with primary brand color (${primaryColor}) and accent (${accentColor}) to assure WCAG AA compliant contrast.`,
       responsiveStrategy:
         'Desktop balances media and copy side-by-side; Tablet condenses padding; Mobile stacks imagery above copy with a full-width thumb-zone CTA.',
