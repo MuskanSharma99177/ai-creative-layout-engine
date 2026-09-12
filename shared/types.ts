@@ -100,7 +100,7 @@ export interface LayoutConfig {
   responsiveRules: LayoutResponsiveRules;
   creativeRationale: CreativeRationale;
   metadata: {
-    engineMode: 'ai-gemini' | 'deterministic-fallback';
+    engineMode: 'ai-openai' | 'deterministic-fallback';
     generatedAt: string;
     confidenceScore?: number;
   };
@@ -112,5 +112,7 @@ export interface GenerateLayoutResponse {
   success: boolean;
   layout: LayoutConfig;
   input: CreativeInput;
+  engine?: 'ai-openai' | 'deterministic-fallback';
+  openAiError?: string;
   warnings?: string[];
 }

@@ -1,0 +1,15 @@
+﻿services:
+  # Unified Fullstack Service on Render
+  - type: web
+    name: creative-layout-engine
+    runtime: node
+    plan: free
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_API_KEY
+        sync: false

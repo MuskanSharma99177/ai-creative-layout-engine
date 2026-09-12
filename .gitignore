@@ -1,4 +1,5 @@
 # Dependencies
+node_modules
 node_modules/
 .pnp
 .pnp.js
@@ -7,6 +8,7 @@ node_modules/
 coverage/
 
 # Production
+dist
 dist/
 build/
 
@@ -16,10 +18,20 @@ build/
 
 # Environment variables
 .env
+.env.*
+*.env
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+!*.example
 
 # Logs
 npm-debug.log*

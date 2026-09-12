@@ -96,7 +96,7 @@ export const LayoutConfigSchema = z.object({
   responsiveRules: LayoutResponsiveRulesSchema,
   creativeRationale: CreativeRationaleSchema,
   metadata: z.object({
-    engineMode: z.enum(['ai-gemini', 'deterministic-fallback']),
+    engineMode: z.enum(['ai-openai', 'ai-gemini', 'deterministic-fallback']),
     generatedAt: z.string(),
     confidenceScore: z.number().optional()
   })

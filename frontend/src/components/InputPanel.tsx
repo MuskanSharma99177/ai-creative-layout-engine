@@ -374,7 +374,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
           className="w-full py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition active:scale-[0.99] disabled:opacity-50"
         >
           <Sparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-          <span>{isGenerating ? 'Analyzing with Gemini AI...' : 'Generate with AI'}</span>
+          <span>{isGenerating ? 'Analyzing with OpenAI...' : 'Generate with AI'}</span>
         </button>
 
         <button

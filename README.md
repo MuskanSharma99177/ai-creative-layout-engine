@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)](https://react.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express)](https://expressjs.com/)
-[![Gemini AI](https://img.shields.io/badge/Gemini-1.5_Flash-8E75B2?logo=google)](https://deepmind.google/technologies/gemini/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai)](https://openai.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-3.0-FCC72B?logo=vitest)](https://vitest.dev/)
 
 > Built for the **Software Engineering Internship** at **Flam**, a company pioneering AI-native, interactive, and visual content experiences.
@@ -30,7 +30,7 @@ Instead of generating arbitrary, unconstrained HTML/CSS or raw code, the engine 
 ```mermaid
 flowchart LR
     A["User / Copywriter Input\n(Headline, Desc, Brand, CTA)"] --> B["Content Analysis &\nContrast Computation"]
-    B --> C["Creative Decision\n(Gemini AI or Fallback)"]
+    B --> C["Creative Decision\n(OpenAI AI or Fallback)"]
     C --> D["LayoutConfig (JSON Contract)\n(Validated via Zod)"]
     D --> E["Adaptive Renderer\n(CSS Grid & Flexbox)"]
     E --> F["Multi-Surface Canvas\n(Mobile | Tablet | Desktop)"]
@@ -54,8 +54,8 @@ flowchart LR
   6. `minimal-editorial`: Luxury serif typography and generous negative space.
   7. `product-focused`: Hero imagery dominates 65-70% of canvas with streamlined pill CTA.
   8. `text-focused`: Bold typographic banner and high-converting message emphasis.
-- **Gemini AI Layout Assistant**:
-  - Leverages Google Gemini (`gemini-1.5-flash`) to analyze brand tone, audience psychology, and copy length.
+- **OpenAI AI Layout Assistant**:
+  - Leverages OpenAI (`gpt-4o-mini` with JSON mode) to analyze brand tone, audience psychology, and copy length.
   - Generates structured JSON adhering to a strict schema.
   - Formulates design rationale: Visual Hierarchy, Color Harmony, Responsive Strategy, and Art Director Tips.
 - **Deterministic Fallback Layout Engine**:
@@ -90,8 +90,8 @@ graph TD
     subgraph Backend["Backend (Node.js + Express + TypeScript)"]
         Router["/api/generate-layout"]
         InVal["Input Zod Validator"]
-        DecisionEngine{"Gemini Key Present?"}
-        GeminiService["Gemini 1.5 Flash AI Assistant"]
+        DecisionEngine{"OpenAI Key Present?"}
+        OpenAIService["OpenAI GPT-4o-mini AI Assistant"]
         OutVal["LayoutConfig Zod Validator"]
         ServerFallback["Deterministic Fallback Engine\n(WCAG AA Contrast + Heuristics)"]
     end
@@ -99,8 +99,8 @@ graph TD
     InputPanel --> Router
     Router --> InVal
     InVal --> DecisionEngine
-    DecisionEngine -- Yes --> GeminiService
-    GeminiService --> OutVal
+    DecisionEngine -- Yes --> OpenAIService
+    OpenAIService --> OutVal
     OutVal -- Valid --> Router
     OutVal -- Invalid / Error --> ServerFallback
     DecisionEngine -- No --> ServerFallback
@@ -124,7 +124,7 @@ graph TD
 | **Icons & Design** | Lucide React | Modern, minimalist interface iconography |
 | **Canvas Export** | `html-to-image` | High-DPI (2x retina) PNG and JPG export |
 | **Backend API** | Node.js, Express, TypeScript, `tsx` | RESTful layout generation microservice |
-| **Generative AI** | `@google/generative-ai` (Gemini 1.5 Flash) | Context-aware layout reasoning & structured JSON generation |
+| **Generative AI** | `openai` (Official SDK, GPT-4o-mini) | Context-aware layout reasoning & structured JSON generation |
 | **Schema Validation** | Zod | Runtime validation for both client input & AI JSON |
 | **Testing** | Vitest | Fast unit testing for schema contracts and heuristics |
 
@@ -185,11 +185,7 @@ creative-layout-engine/
 ### Step 1: Install Dependencies
 From the project root:
 ```bash
-# Install backend dependencies
-cd backend && npm install
-
-# Install frontend dependencies
-cd ../frontend && npm install
+npm run install:all
 ```
 
 ### Step 2: Environment Configuration
@@ -201,29 +197,26 @@ cp backend/.env.example backend/.env
 Contents of `backend/.env`:
 ```env
 PORT=5000
-# Optional: Provide Google Gemini API Key.
-# If omitted, the engine automatically uses the Deterministic Fallback Engine.
-GEMINI_API_KEY=your_gemini_api_key_here
+HOST=0.0.0.0
 NODE_ENV=development
+# Provide your OpenAI API Key:
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4o-mini
 ```
 
-> **Note on AI Mode**: The system functions completely out-of-the-box even without a `GEMINI_API_KEY`. When no key is provided, the deterministic rule-based engine generates high-quality responsive designs automatically.
+> **Note on AI Mode**: The system functions completely out-of-the-box even without an `OPENAI_API_KEY`. When no key is provided, the deterministic rule-based engine generates high-quality responsive designs automatically.
 
 ### Step 3: Run the Servers
 
-**Terminal 1 (Backend API):**
+**Option A — Monorepo root:**
 ```bash
-cd backend
-npm run dev
-# Running on http://localhost:5000
+npm run dev:backend
+npm run dev:frontend
 ```
 
-**Terminal 2 (Frontend Studio):**
-```bash
-cd frontend
-npm run dev
-# Running on http://localhost:3000
-```
+**Option B — Independent terminals:**
+- **Terminal 1 (Backend API):** `cd backend && npm run dev` (running on `http://localhost:5000`)
+- **Terminal 2 (Frontend Studio):** `cd frontend && npm run dev` (running on `http://localhost:3000`)
 
 Visit **`http://localhost:3000`** in your browser.
 
@@ -233,7 +226,6 @@ Visit **`http://localhost:3000`** in your browser.
 
 Run the Vitest test suite on backend:
 ```bash
-cd backend
 npm test
 ```
 
@@ -248,30 +240,39 @@ Verified test coverage includes:
 ## 9. Production Build
 
 ```bash
-# Build backend TypeScript
-cd backend && npm run build
+# Build both backend TypeScript and frontend bundle
+npm run build
 
-# Build frontend production bundle
-cd ../frontend && npm run build
+# Start production server
+npm start
 ```
 
 ---
 
-## 10. Deployment Instructions
+## 10. Deployment to Render & GitHub
 
-### Frontend (Vercel / Netlify / Cloudflare Pages)
-1. Push repository to GitHub.
-2. Link repository to **Vercel**.
-3. Set **Root Directory** to `frontend`.
-4. Set **Build Command** to `npm run build`.
-5. Set **Output Directory** to `dist`.
-6. Add environment variable `VITE_API_URL` pointing to the deployed backend URL if deployed separately.
+### Option A: Render Blueprint (Recommended — 1-Click Unified Service)
+The repository includes a root `render.yaml` configuration file.
+1. Push the repository to GitHub.
+2. In the Render Dashboard, click **New +** → **Blueprint**.
+3. Select your repository.
+4. Render automatically configures:
+   - **Build Command**: `npm run install:all && npm run build`
+   - **Start Command**: `npm start`
+   - **Environment Variables**: Set `OPENAI_API_KEY` in the Render Environment Variables tab.
+5. Click **Apply**. Render builds both services and serves the frontend studio with backend API on a single URL!
 
-### Backend (Render / Railway / Fly.io)
-1. Set **Root Directory** to `backend`.
-2. Set **Build Command** to `npm install && npm run build`.
-3. Set **Start Command** to `npm start`.
-4. Configure environment variable: `GEMINI_API_KEY`.
+### Option B: Separate Services on Render
+- **Backend (Web Service)**:
+  1. Set **Root Directory**: `backend`
+  2. Set **Build Command**: `npm install && npm run build`
+  3. Set **Start Command**: `npm start`
+  4. Environment Variables: `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-4o-mini`
+- **Frontend (Static Site)**:
+  1. Set **Root Directory**: `frontend`
+  2. Set **Build Command**: `npm install && npm run build`
+  3. Set **Publish Directory**: `dist`
+  4. Environment Variables: `VITE_API_BASE_URL=https://your-backend.onrender.com`
 
 ---
 

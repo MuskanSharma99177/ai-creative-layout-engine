@@ -20,11 +20,14 @@ export async function generateLayoutHandler(req: Request, res: Response): Promis
     }
 
     const input = parseResult.data;
-    const layout = await generateCreativeLayout(input);
+    const result = await generateCreativeLayout(input);
 
     res.status(200).json({
       success: true,
-      layout,
+      layout: result.layout,
+      engine: result.engine,
+      openAiError: result.openAiError,
+      geminiError: result.openAiError,
       input
     });
   } catch (err: any) {

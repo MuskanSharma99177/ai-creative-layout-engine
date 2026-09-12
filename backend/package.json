@@ -1,6 +1,7 @@
 {
   "name": "creative-layout-engine-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Backend API and Layout Generation Engine for Flam Adaptive Creative Layout Engine",
   "main": "src/index.ts",
   "scripts": {
@@ -18,11 +19,10 @@
   "author": "Flam SWE Intern",
   "license": "MIT",
   "dependencies": {
-    "@google/genai": "^2.22.0",
-    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "openai": "^7.15.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

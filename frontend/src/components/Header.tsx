@@ -24,7 +24,7 @@ interface HeaderProps {
   isExporting: boolean;
   isGenerating: boolean;
   onGenerateAI: () => void;
-  engineMode: 'ai-gemini' | 'deterministic-fallback';
+  engineMode: 'ai-openai' | 'deterministic-fallback';
 }
 
 export const Header: React.FC<HeaderProps> = ({

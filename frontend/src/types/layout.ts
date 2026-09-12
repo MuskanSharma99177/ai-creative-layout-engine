@@ -101,7 +101,7 @@ export interface LayoutConfig {
   responsiveRules: LayoutResponsiveRules;
   creativeRationale: CreativeRationale;
   metadata: {
-    engineMode: 'ai-gemini' | 'deterministic-fallback';
+    engineMode: 'ai-openai' | 'deterministic-fallback';
     generatedAt: string;
     confidenceScore?: number;
   };
