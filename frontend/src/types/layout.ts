@@ -20,8 +20,28 @@ export interface DeviceSpec {
   description: string;
 }
 
+export interface ColumnSummaryStats {
+  min?: number;
+  max?: number;
+  avg?: number;
+}
+
+export interface DatasetProfile {
+  rows: number;
+  columns: number;
+  columnNames: string[];
+  numericColumns: string[];
+  categoricalColumns: string[];
+  textColumns: string[];
+  dateColumns: string[];
+  missingValueCounts: Record<string, number>;
+  uniqueValueCounts: Record<string, number>;
+  sampleRows: Record<string, any>[];
+  summaryStats?: Record<string, ColumnSummaryStats>;
+}
+
 export interface CreativeInput {
-  productName: string;
+  productName?: string;
   headline: string;
   description: string;
   cta: string;
@@ -31,6 +51,16 @@ export interface CreativeInput {
   campaignGoal?: string;
   badgeText?: string;
   imageUrl?: string;
+  datasetProfile?: DatasetProfile;
+  activeRowData?: Record<string, any>;
+  activeRowIndex?: number;
+}
+
+export interface PresetCampaign {
+  id: string;
+  name: string;
+  category: string;
+  input: CreativeInput;
 }
 
 export interface LayoutTheme {
@@ -105,11 +135,4 @@ export interface LayoutConfig {
     generatedAt: string;
     confidenceScore?: number;
   };
-}
-
-export interface PresetCampaign {
-  id: string;
-  name: string;
-  category: string;
-  input: CreativeInput;
 }

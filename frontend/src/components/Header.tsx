@@ -13,14 +13,18 @@ import {
 } from 'lucide-react';
 import { DeviceType } from '../types/layout';
 import { CAMPAIGN_PRESETS, DEVICE_PRESETS } from '../constants/presets';
+import { Columns, Copy, Code2 } from 'lucide-react';
 
 interface HeaderProps {
   currentDevice: DeviceType;
   onDeviceChange: (device: DeviceType) => void;
+  viewMode: 'single' | 'matrix';
+  onViewModeChange: (mode: 'single' | 'matrix') => void;
   zoomLevel: number;
   onZoomChange: (zoom: number) => void;
   onSelectPreset: (presetId: string) => void;
   onExport: (format: 'png' | 'jpeg') => void;
+  onCopyConfig: () => void;
   isExporting: boolean;
   isGenerating: boolean;
   onGenerateAI: () => void;
@@ -30,10 +34,13 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   currentDevice,
   onDeviceChange,
+  viewMode,
+  onViewModeChange,
   zoomLevel,
   onZoomChange,
   onSelectPreset,
   onExport,
+  onCopyConfig,
   isExporting,
   isGenerating,
   onGenerateAI,
@@ -61,9 +68,9 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Center: Device Switcher & Dimensions */}
-      <div className="flex items-center gap-2 bg-slate-950/70 p-1 rounded-xl border border-slate-800">
+      <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 shadow-inner">
         {DEVICE_PRESETS.map((spec) => {
-          const isActive = currentDevice === spec.id;
+          const isActive = viewMode === 'single' && currentDevice === spec.id;
           const IconComponent =
             spec.id === 'mobile' ? Smartphone : spec.id === 'tablet' ? Tablet : Monitor;
 
@@ -71,7 +78,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={spec.id}
               type="button"
-              onClick={() => onDeviceChange(spec.id)}
+              onClick={() => {
+                onViewModeChange('single');
+                onDeviceChange(spec.id);
+              }}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 isActive
                   ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
@@ -87,10 +97,37 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           );
         })}
+
+        <div className="w-[1px] h-4 bg-slate-800 mx-1 hidden sm:block" />
+
+        {/* Multi-Surface Matrix Toggle */}
+        <button
+          type="button"
+          onClick={() => onViewModeChange(viewMode === 'matrix' ? 'single' : 'matrix')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            viewMode === 'matrix'
+              ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
+              : 'text-cyan-400 hover:text-cyan-300 hover:bg-slate-800/60 border border-cyan-500/20'
+          }`}
+          title="Compare all 3 surfaces (Mobile, Tablet, Desktop) side-by-side"
+        >
+          <Columns className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">All 3 Surfaces</span>
+        </button>
       </div>
 
-      {/* Right Controls: Presets, AI Generate, Zoom, Export */}
+      {/* Right Controls: Presets, AI Generate, Zoom, Export, Copy JSON */}
       <div className="flex items-center gap-2">
+        {/* Copy Layout JSON button */}
+        <button
+          type="button"
+          onClick={onCopyConfig}
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700/80 transition"
+          title="Copy Layout JSON Schema"
+        >
+          <Code2 className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="hidden lg:inline">Copy JSON</span>
+        </button>
         {/* Preset Selector Dropdown */}
         <div className="relative">
           <button

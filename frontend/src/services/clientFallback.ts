@@ -64,7 +64,41 @@ export function generateClientFallbackLayout(input: CreativeInput): LayoutConfig
   let imagePosition: LayoutConfig['composition']['imagePosition'] = 'left';
   let spacing: LayoutConfig['composition']['spacing'] = 'comfortable';
 
-  if (isLuxury) {
+  const isDataset = Boolean(input.datasetProfile && input.datasetProfile.columnNames && input.datasetProfile.columnNames.length > 0);
+  const dp = input.datasetProfile;
+
+  if (isDataset && dp) {
+    if (dp.dateColumns && dp.dateColumns.length > 0) {
+      layoutType = 'minimal-editorial';
+      fontFamily = 'mono';
+      headlineScale = 'standard';
+      visualEmphasis = 'headline';
+      ctaStyle = 'outline';
+      spacing = 'comfortable';
+      imagePosition = 'right';
+    } else if (dp.numericColumns && dp.numericColumns.length >= 2 && !hasImage) {
+      layoutType = 'split-screen';
+      fontFamily = 'sans';
+      headlineScale = 'heroic';
+      visualEmphasis = 'headline';
+      ctaStyle = 'gradient';
+      spacing = 'comfortable';
+      imagePosition = 'right';
+    } else if (hasImage) {
+      layoutType = 'product-focused';
+      visualEmphasis = 'product-image';
+      headlineScale = 'large';
+      ctaStyle = 'solid';
+      imagePosition = 'left';
+    } else {
+      layoutType = 'centered-product';
+      fontFamily = 'sans';
+      headlineScale = 'heroic';
+      visualEmphasis = 'headline';
+      ctaStyle = 'pill';
+      imagePosition = 'center';
+    }
+  } else if (isLuxury) {
     layoutType = 'minimal-editorial';
     fontFamily = 'serif';
     headlineScale = 'standard';
@@ -186,15 +220,17 @@ export function generateClientFallbackLayout(input: CreativeInput): LayoutConfig
       }
     },
     creativeRationale: {
-      layoutChoice: `Selected "${layoutType}" template because ${
-        isSaleOrDiscount
-          ? 'the high-urgency promotional headline benefits from high-contrast split visual tension'
-          : isLuxury
-          ? 'luxury branding requires generous negative space and sophisticated editorial framing'
-          : hasImage
-          ? 'high-impact product photography commands prominent focal space'
-          : 'focused headline copy and balanced center alignment delivers clean readability'
-      }.`,
+      layoutChoice: isDataset
+        ? `Selected "${layoutType}" archetype to best visualize ${dp?.rows || 0}-record dataset structured across ${dp?.columns || 0} columns (${dp?.columnNames?.slice(0, 4).join(', ') || ''}).`
+        : `Selected "${layoutType}" template because ${
+            isSaleOrDiscount
+              ? 'the high-urgency promotional headline benefits from high-contrast split visual tension'
+              : isLuxury
+              ? 'luxury branding requires generous negative space and sophisticated editorial framing'
+              : hasImage
+              ? 'high-impact product photography commands prominent focal space'
+              : 'focused headline copy and balanced center alignment delivers clean readability'
+          }.`,
       visualHierarchy: `Prioritizing ${visualEmphasis.replace('-', ' ')} based on ${
         isSaleOrDiscount ? 'high-urgency offer signals' : 'content volume and product imagery'
       }. Headline scale tuned to ${headlineScale}.`,

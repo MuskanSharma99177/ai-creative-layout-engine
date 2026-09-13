@@ -166,4 +166,99 @@ describe('Layout Engine Schema & Fallback Suite', () => {
       expect(layout.responsiveRules.mobile.ctaFullWidth).toBe(true);
     });
   });
+
+  it('should reliably handle Dataset A (HR/Employee Directory: Name, Age, Salary, Department)', () => {
+    const datasetAInput = {
+      productName: 'Alex Chen',
+      headline: 'Alex Chen',
+      description: 'Department: IT • Age: 23 • Salary: 45000',
+      cta: 'Explore IT',
+      badgeText: 'Salary: 45,000',
+      brandColors: ['#0F172A', '#10B981'],
+      datasetProfile: {
+        rows: 2,
+        columns: 4,
+        columnNames: ['Name', 'Age', 'Salary', 'Department'],
+        numericColumns: ['Age', 'Salary'],
+        categoricalColumns: ['Department'],
+        textColumns: ['Name'],
+        dateColumns: [],
+        missingValueCounts: { Name: 0, Age: 0, Salary: 0, Department: 0 },
+        uniqueValueCounts: { Name: 2, Age: 2, Salary: 2, Department: 2 },
+        sampleRows: [
+          { Name: 'A', Age: '23', Salary: '45000', Department: 'IT' },
+          { Name: 'B', Age: '25', Salary: '60000', Department: 'HR' }
+        ]
+      },
+      activeRowData: { Name: 'A', Age: '23', Salary: '45000', Department: 'IT' }
+    };
+
+    const layout = generateFallbackLayout(datasetAInput);
+    const validated = LayoutConfigSchema.safeParse(layout);
+    expect(validated.success).toBe(true);
+    expect(layout.creativeRationale.layoutChoice).toContain('dataset');
+  });
+
+  it('should reliably handle Dataset B (Product Catalog: Product, Category, Price, Rating)', () => {
+    const datasetBInput = {
+      productName: 'Phone',
+      headline: 'Phone',
+      description: 'Category: Electronics • Price: 500 • Rating: 4.5',
+      cta: 'Explore Electronics',
+      badgeText: 'Rating: 4.5',
+      brandColors: ['#0F172A', '#3B82F6'],
+      datasetProfile: {
+        rows: 2,
+        columns: 4,
+        columnNames: ['Product', 'Category', 'Price', 'Rating'],
+        numericColumns: ['Price', 'Rating'],
+        categoricalColumns: ['Category'],
+        textColumns: ['Product'],
+        dateColumns: [],
+        missingValueCounts: { Product: 0, Category: 0, Price: 0, Rating: 0 },
+        uniqueValueCounts: { Product: 2, Category: 2, Price: 2, Rating: 2 },
+        sampleRows: [
+          { Product: 'Phone', Category: 'Electronics', Price: '500', Rating: '4.5' },
+          { Product: 'Book', Category: 'Education', Price: '20', Rating: '4.2' }
+        ]
+      },
+      activeRowData: { Product: 'Phone', Category: 'Electronics', Price: '500', Rating: '4.5' }
+    };
+
+    const layout = generateFallbackLayout(datasetBInput);
+    const validated = LayoutConfigSchema.safeParse(layout);
+    expect(validated.success).toBe(true);
+  });
+
+  it('should reliably handle Dataset C (Sensor/Weather Log with missing value: Date, Temperature, Humidity)', () => {
+    const datasetCInput = {
+      productName: '2026-01-01',
+      headline: '2026-01-01',
+      description: 'Temperature: 24.5 • Humidity: 61',
+      cta: 'Inspect Metrics',
+      badgeText: 'Temperature: 24.5',
+      brandColors: ['#1C1917', '#D97706'],
+      datasetProfile: {
+        rows: 2,
+        columns: 3,
+        columnNames: ['Date', 'Temperature', 'Humidity'],
+        numericColumns: ['Temperature', 'Humidity'],
+        categoricalColumns: [],
+        textColumns: [],
+        dateColumns: ['Date'],
+        missingValueCounts: { Date: 0, Temperature: 0, Humidity: 1 },
+        uniqueValueCounts: { Date: 2, Temperature: 2, Humidity: 1 },
+        sampleRows: [
+          { Date: '2026-01-01', Temperature: '24.5', Humidity: '61' },
+          { Date: '2026-01-02', Temperature: '', Humidity: '' }
+        ]
+      },
+      activeRowData: { Date: '2026-01-01', Temperature: '24.5', Humidity: '61' }
+    };
+
+    const layout = generateFallbackLayout(datasetCInput);
+    const validated = LayoutConfigSchema.safeParse(layout);
+    expect(validated.success).toBe(true);
+    expect(layout.theme.fontFamily).toBe('mono'); // Date/Sensor logs use mono
+  });
 });

@@ -18,6 +18,7 @@ export function App() {
     generateClientFallbackLayout(defaultPreset.input)
   );
   const [currentDevice, setCurrentDevice] = useState<DeviceType>('desktop');
+  const [viewMode, setViewMode] = useState<'single' | 'matrix'>('single');
   const [zoomLevel, setZoomLevel] = useState<number>(0.85);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -124,13 +125,22 @@ export function App() {
     if (!canvasRef.current) return;
     setIsExporting(true);
     try {
-      await exportCreativeImage(canvasRef.current, input.productName, currentDevice, format);
+      await exportCreativeImage(canvasRef.current, input.productName || input.headline || 'creative', currentDevice, format);
       showToast(`Exported creative as high-res ${format.toUpperCase()}`, 'success');
     } catch (error) {
       console.error(error);
       showToast('Failed to export image. Please try again.', 'error');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleCopyConfig = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(layoutConfig, null, 2));
+      showToast('📋 Layout JSON configuration copied to clipboard!', 'success');
+    } catch {
+      showToast('Failed to copy to clipboard', 'error');
     }
   };
 
@@ -182,10 +192,13 @@ export function App() {
       <Header
         currentDevice={currentDevice}
         onDeviceChange={setCurrentDevice}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         zoomLevel={zoomLevel}
         onZoomChange={setZoomLevel}
         onSelectPreset={handleSelectPreset}
         onExport={handleExport}
+        onCopyConfig={handleCopyConfig}
         isExporting={isExporting}
         isGenerating={isGenerating}
         onGenerateAI={handleGenerateAI}
@@ -201,6 +214,7 @@ export function App() {
           onGenerateAI={handleGenerateAI}
           onRunFallback={handleRunFallback}
           isGenerating={isGenerating}
+          onDatasetLoaded={(name) => showToast(`📊 Successfully profiled ${name}`, 'success')}
         />
 
         {/* Center Live Responsive Canvas Viewport */}
@@ -211,6 +225,8 @@ export function App() {
           zoomLevel={zoomLevel}
           canvasRef={canvasRef}
           engineMode={engineMode}
+          viewMode={viewMode}
+          onSelectDevice={setCurrentDevice}
         />
 
         {/* Right AI Intelligence & Live Tweaker Inspector */}

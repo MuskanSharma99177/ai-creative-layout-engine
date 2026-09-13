@@ -265,21 +265,42 @@ export async function generateCreativeLayout(input: CreativeInputDto): Promise<G
   try {
     const openai = new OpenAI({ apiKey });
 
-    const prompt = `
-You are an expert Creative Art Director, UI/UX Architect, and Design Technologist at Flam (an AI-native visual content company).
-Analyze the following advertisement input and recommend an optimal creative layout configuration for multi-surface rendering (Mobile, Tablet, Desktop).
+    const isDatasetMode = Boolean(input.datasetProfile && input.datasetProfile.columnNames && input.datasetProfile.columnNames.length > 0);
+    const profile = input.datasetProfile;
 
-INPUT:
-- Product Name: "${input.productName}"
-- Headline: "${input.headline}"
-- Description: "${input.description}"
+    const datasetContext = isDatasetMode ? `
+DATASET SCHEMA & PROFILE:
+- Total Records: ${profile?.rows}
+- Total Columns: ${profile?.columns}
+- Column Names: ${profile?.columnNames?.join(', ')}
+- Inferred Numeric Columns: ${profile?.numericColumns?.join(', ') || 'None'}
+- Inferred Categorical Columns: ${profile?.categoricalColumns?.join(', ') || 'None'}
+- Inferred Date Columns: ${profile?.dateColumns?.join(', ') || 'None'}
+- Inferred Text Columns: ${profile?.textColumns?.join(', ') || 'None'}
+- Active Record Values: ${JSON.stringify(input.activeRowData || {})}
+- Sample Dataset Records: ${JSON.stringify(profile?.sampleRows?.slice(0, 3) || [])}
+- Numeric Column Statistics: ${JSON.stringify(profile?.summaryStats || {})}
+
+CRITICAL DATA INTEGRITY RULE:
+Use ONLY columns that exist in the provided dataset. Never invent, rename, or assume unavailable columns.
+` : '';
+
+    const prompt = `
+You are an expert Creative Layout Architect, Visual Data Designer, and Design Technologist at Flam.
+Analyze the following ${isDatasetMode ? 'uploaded dataset profile and active record' : 'advertisement input'} and recommend an optimal creative layout configuration for multi-surface rendering (Mobile, Tablet, Desktop).
+
+${isDatasetMode ? datasetContext : ''}
+INPUT VALUES:
+- Title / Identifier: "${input.headline}"
+- Key Metric / Highlight: "${input.badgeText || 'N/A'}"
+- Record Summary / Description: "${input.description}"
 - Call-to-Action: "${input.cta}"
-- Brand Name: "${input.brandName || 'N/A'}"
+- Category / Brand: "${input.brandName || 'N/A'}"
 - Brand Colors: ${JSON.stringify(input.brandColors)}
 - Target Audience: "${input.targetAudience || 'General'}"
 - Campaign Goal: "${input.campaignGoal || 'Awareness'}"
 - Badge Text: "${input.badgeText || ''}"
-- Has Product Image: ${Boolean(input.imageUrl)}
+- Has Image: ${Boolean(input.imageUrl)}
 
 CRITICAL CONSTRAINTS:
 1. layoutType MUST be chosen from ONLY these 8 existing layout templates:

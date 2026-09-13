@@ -4,7 +4,7 @@ import { DeviceType, LayoutConfig } from '../../types/layout';
 
 interface CreativeMediaProps {
   imageUrl?: string;
-  productName: string;
+  productName?: string;
   config: LayoutConfig;
   device: DeviceType;
   className?: string;
@@ -13,7 +13,7 @@ interface CreativeMediaProps {
 
 export const CreativeMedia: React.FC<CreativeMediaProps> = ({
   imageUrl,
-  productName,
+  productName = 'Product Visual',
   config,
   className = '',
   aspectClass = ''

@@ -11,21 +11,42 @@ export const LayoutTypeEnum = z.enum([
   'text-focused'
 ]);
 
+export const ColumnSummaryStatsSchema = z.object({
+  min: z.number().optional(),
+  max: z.number().optional(),
+  avg: z.number().optional()
+});
+
+export const DatasetProfileSchema = z.object({
+  rows: z.number(),
+  columns: z.number(),
+  columnNames: z.array(z.string()),
+  numericColumns: z.array(z.string()),
+  categoricalColumns: z.array(z.string()),
+  textColumns: z.array(z.string()),
+  dateColumns: z.array(z.string()),
+  missingValueCounts: z.record(z.string(), z.number()).optional().default({}),
+  uniqueValueCounts: z.record(z.string(), z.number()).optional().default({}),
+  sampleRows: z.array(z.record(z.string(), z.any())).optional().default([]),
+  summaryStats: z.record(z.string(), ColumnSummaryStatsSchema).optional().default({})
+});
+
 export const CreativeInputSchema = z.object({
-  productName: z.string().min(1, 'Product name is required').max(120),
-  headline: z.string().min(1, 'Headline is required').max(150),
-  description: z.string().min(1, 'Description is required').max(600),
-  cta: z.string().min(1, 'CTA text is required').max(50),
+  productName: z.string().max(150).optional().default('Data Record'),
+  headline: z.string().min(1, 'Headline or record title is required').max(200),
+  description: z.string().max(1000).optional().default(''),
+  cta: z.string().min(1, 'Call to action is required').max(80),
   brandName: z.string().max(80).optional().default(''),
   brandColors: z
-    .array(z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color'))
-    .min(1, 'At least one brand color is required')
-    .max(6)
+    .array(z.string())
     .default(['#0F172A', '#3B82F6']),
   targetAudience: z.string().max(150).optional().default('General audience'),
-  campaignGoal: z.string().max(100).optional().default('Brand Awareness'),
-  badgeText: z.string().max(40).optional().default(''),
-  imageUrl: z.string().optional().default('')
+  campaignGoal: z.string().max(100).optional().default('Information'),
+  badgeText: z.string().max(80).optional().default(''),
+  imageUrl: z.string().optional().default(''),
+  datasetProfile: DatasetProfileSchema.optional(),
+  activeRowData: z.record(z.string(), z.any()).optional(),
+  activeRowIndex: z.number().optional()
 });
 
 export const LayoutThemeSchema = z.object({
@@ -53,7 +74,7 @@ export const LayoutCompositionSchema = z.object({
   imageAspectRatio: z.enum(['square', 'portrait', 'landscape', 'wide']).default('landscape'),
   ctaPosition: z.enum(['inline', 'bottom-left', 'bottom-center', 'bottom-right', 'floating']).default('inline'),
   ctaStyle: z.enum(['solid', 'outline', 'gradient', 'pill']).default('solid'),
-  visualEmphasis: z.enum(['headline', 'product-image', 'discount-badge', 'cta']).default('product-image'),
+  visualEmphasis: z.enum(['headline', 'product-image', 'discount-badge', 'cta']).default('headline'),
   spacing: z.enum(['compact', 'comfortable', 'spacious']).default('comfortable'),
   overlayOpacity: z.number().min(0).max(1).default(0.4),
   hasBadge: z.boolean().default(false),
